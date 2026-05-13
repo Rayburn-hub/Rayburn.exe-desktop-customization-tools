@@ -173,12 +173,6 @@
     .insight-value { font-size: 1.8rem; font-weight: 700; color: #0a1f4a; }
     .insight-label { font-size: 0.7rem; color: #4a6090; }
 
-    .ai-widget { background: rgba(255,255,255,0.55); backdrop-filter: blur(20px); border-radius: 2rem; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .ai-widget h4 { color:#0a1f4a; margin-bottom: 1rem; }
-    .ai-widget input { width: 100%; padding: 0.8rem; border-radius: 1rem; border: 2px solid #d0ddff; margin-bottom: 1rem; }
-    .ai-widget button { background: white; border: none; padding: 0.7rem 2rem; border-radius: 2rem; font-weight: 700; cursor: pointer; box-shadow: 0 8px 20px rgba(130,160,230,0.3); }
-    .ai-widget canvas { margin-top: 1rem; }
-
     @media (max-width: 900px) {
       .app-container { flex-direction: column; min-height: auto; border-radius: 2rem; }
       .left-decor { width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 1rem; padding: 1.2rem 1rem; border-right: none; border-bottom: 2px solid rgba(255,255,255,0.8); order: 2; }
@@ -256,13 +250,6 @@
         </div>
       </div>
 
-      <div class="ai-widget">
-        <h4>🤖 AI Bar Chart Generator</h4>
-        <input type="text" id="aiInput" placeholder="Ask for bar chart data...">
-        <button onclick="generateChart()">Generate Chart</button>
-        <canvas id="chartCanvas"></canvas>
-      </div>
-
       <div class="tabs">
         <div class="tab active" data-tab="rainmeter">🌧️ Rainmeter</div>
         <div class="tab" data-tab="wallpaper">🎥 Wallpaper Engine</div>
@@ -312,8 +299,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai"></script>
   <script>
     var SUPABASE_URL = 'https://ykolnvhkadutsfnnjilt.supabase.co';
     var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlrb2xudmhrYWR1dHNmbm5qaWx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Njc1MzQsImV4cCI6MjA5MzU0MzUzNH0.r2WtpXYlpJuml7lfKadmNvU6SRhC31tImGGeXRu-KzU';
@@ -321,64 +306,6 @@
 
     var supabase = null;
     try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
-
-    // AI Bar Chart
-    const API_KEY = 'AIzaSyCVm6rrx2_I60ZouSvw_Znu4gQTovk7q8w';
-    const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    async function generateChart() {
-      const userInput = document.getElementById('aiInput').value.trim();
-      if (!userInput) {
-        alert('Please enter a question or description for the bar chart.');
-        return;
-      }
-      try {
-        const prompt = `Generate bar chart data for: ${userInput}. Return only a valid JSON object with "labels" as an array of strings and "data" as an array of numbers. No markdown, no extra text.`;
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text().trim();
-        // Remove any markdown code blocks if present
-        if (text.startsWith('```json')) {
-          text = text.replace(/```json\s*/, '').replace(/```\s*$/, '');
-        } else if (text.startsWith('```')) {
-          text = text.replace(/```json\s*/, '').replace(/```\s*$/, '');
-        }
-        const chartData = JSON.parse(text);
-        if (!chartData.labels || !chartData.data || !Array.isArray(chartData.labels) || !Array.isArray(chartData.data)) {
-          throw new Error('Invalid data format');
-        }
-        const ctx = document.getElementById('chartCanvas').getContext('2d');
-        // Destroy previous chart if exists
-        if (window.myChart) {
-          window.myChart.destroy();
-        }
-        window.myChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: chartData.labels,
-            datasets: [{
-              label: 'Value',
-              data: chartData.data,
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              borderColor: 'rgba(75, 192, 192, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true
-              }
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error generating chart:', error);
-        alert('Error generating chart. Please check your API key and try again.');
-      }
-    }
 
     // Tab switching
     var currentTab = 'rainmeter';
